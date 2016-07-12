@@ -1,0 +1,7 @@
+main module
+{
+ out ("digite um valor para lado: " );
+ in (i_lado)
+ i_area <- i_lado * i_lado;
+ out (i_area);
+} 

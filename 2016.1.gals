@@ -1,0 +1,161 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+Package = gals
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = Stream
+Parser = LL
+#RegularDefinitions
+mai: [A-Z]
+min: [a-z]
+dig: [0-9]
+comentbloco: "/" "*"([^"*"]|"*"+ [^"*" "/"])* "*"+ "/"
+
+#Tokens
+//Palavra
+palavra: {min}+({min}|({mai}{min})|({min}{mai}){min})*
+
+int: "i_"({mai}|{min})((({mai}|{min})|{dig}))* 
+float  : "f_"({mai}|{min})((({mai}|{min})|{dig}))*
+string : "s_"({mai}|{min})((({mai}|{min})|{dig}))*
+bool   : "b_"({mai}|{min})((({mai}|{min})|{dig}))*
+
+//especiais
+","
+":"
+";"
+"["
+"]"
+"("
+")"
+"{"
+"}"
+"+"
+"-"
+"*"
+"/"
+"<-"
+"="
+"!="
+"<"
+"<="
+">"
+">="
+
+and = palavra: "and"
+false = palavra: "false"
+if = palavra: "if"
+in = palavra: "in"
+isFalseDo = palavra: "isFalseDo"
+isTrueDo = palavra: "isTrueDo"
+main = palavra: "main"
+module = palavra: "module"
+not = palavra: "not"
+or = palavra: "or"
+out = palavra: "out"
+true = palavra: "true"
+while = palavra: "while"
+
+//Constantes
+constint: {dig}+
+constfloat: {dig}+(,{dig}+)
+conststring: \"[^\n\"]*\"
+
+//Ignorados
+:[\s\t\n]
+:! {comentbloco}
+#NonTerminals
+<declaracao>
+<listadevariaveis>
+<listaexpressoes>
+<listacomandos>
+<listadeidentificadores>
+<variaveis>
+<palavravet>
+<palavra>
+<atribuicao>
+<entrada>
+<palavraent>
+<saida>
+<selecao>
+<alternativatrue>
+<alternativafalse>
+<repeticao>
+<opcao>
+<comando>
+<expressao>
+<elemento>
+<relacional>
+<operador_relacional>
+<aritmetica>
+<vetor_uso>
+<expressao_1>
+<relacional_1>
+<aritmetica_1>
+<termo>
+<termo_1>
+<fator>
+<listavariaveis1>
+<listaexpressoes2>
+<listacomandos3>
+<listadeidentificadores4>
+<palavravet4>
+<palavraent5>
+<selecao1>
+#Grammar
+<declaracao>			::= #12 main module <variaveis> "{" <listacomandos> "}" #13;
+<variaveis>			::= î | ":" <listadevariaveis> ";";
+
+
+<listadevariaveis>		::= <palavravet> <listavariaveis1>;
+<palavravet>			::= <palavra> #21 <palavravet4> #22;
+<palavravet4>			::= î | "[" constint #26"]";
+<listavariaveis1>		::= î | "," <listadevariaveis>;
+<palavra>			::= int | float | string| bool;
+
+<listacomandos>			::= <comando><listacomandos3>;
+<comando>			::= <atribuicao> | <entrada> | <saida> | <selecao> | <repeticao>;
+<listacomandos3>		::= î |  <listacomandos>;
+<atribuicao>			::= <palavra> #21 #37 <palavraent5> "<-" <expressao> #25";";
+
+
+<entrada>			::= in "(" <listadeidentificadores> ")" ";";
+<listadeidentificadores>	::= <palavraent> <listadeidentificadores4>;
+<palavraent>			::= <palavra> #21 #35 <palavraent5> #23;
+<palavraent5>			::= î | #27 "[" <expressao> #20 "]"; 
+<listadeidentificadores4>	::= î | ","<listadeidentificadores>;
+
+<saida>				::= out "(" <listaexpressoes> ")" ";";
+<listaexpressoes>		::= <expressao> #11 <listaexpressoes2>;
+<listaexpressoes2>		::= î | "," <listaexpressoes>;	
+
+<selecao>			::= if "(" <expressao> #34")" <selecao1>;
+<selecao1>			::= isTrueDo  #28 ":" "{" <listacomandos> "}" <alternativatrue>  #29 |
+				    isFalseDo #28 ":" "{" <listacomandos> "}" <alternativafalse> #29;
+<alternativatrue>		::= î | isFalseDo #30 ":" "{" <listacomandos> "}";
+<alternativafalse>		::= î | isTrueDo  #30 ":" "{" <listacomandos> "}";
+
+<repeticao>			::= #31 while "("<expressao>  #34")" <opcao> #32 ":" "{" <listacomandos> "}" #33;
+<opcao>				::= isTrueDo | isFalseDo;
+
+<expressao> 			::= <elemento> <expressao_1> #36;
+<expressao_1> 			::= î | or <elemento> #15 <expressao_1> | and <elemento> #14 <expressao_1>;
+<elemento> 			::= <relacional> | true #16| false #17| not <elemento> #18;
+
+<relacional> 			::= <aritmetica> <relacional_1>;
+<relacional_1> 			::= î | <operador_relacional> #10 <aritmetica>#9;
+<operador_relacional> 		::= "=" | "!=" | "<" | "<=" | ">" | ">=";
+
+
+<aritmetica> 			::= <termo> <aritmetica_1>;
+<termo> 				::= <fator> <termo_1>;
+
+<fator>			 	::= <palavra>#21 <vetor_uso>#24 | constint #5| constfloat #6| conststring #19| "(" <expressao> ")" | "+" <fator> #7| "-" <fator>#8;
+<termo_1> 			::= î | "*" <fator>#3<termo_1>  | "/" <fator>#4<termo_1>;
+<aritmetica_1> 			::= î | "+" <termo>#1<aritmetica_1> | "-" <termo>#2<aritmetica_1>;
+<vetor_uso>			::= î | #30 "[" <expressao> "]";
